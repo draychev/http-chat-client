@@ -15,9 +15,9 @@ var cfg *ChatConfig
 
 // --- Web ChatServerFQDN Endpoints
 const (
-	endPointSendMessage           = "/send-message"
-	endPointGetMessagesForChannel = "/get-messages"
-	endPointGetUsersForChannel    = "/get-users"
+	endPointSendMessage = "/send-message"
+	endPointGetMessages = "/get-messages"
+	endPointGetUsers    = "/get-users"
 
 	// --- HTML Components
 	formKeyMessage = "message"
@@ -100,7 +100,7 @@ func handlerSendMessage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
-func handlerGetMessagesForChannel(w http.ResponseWriter, r *http.Request) {
+func handlerGetMessages(w http.ResponseWriter, r *http.Request) {
 	var messages []string
 	for idx, msg := range getMessages() {
 		messages = append(
@@ -114,7 +114,7 @@ func handlerGetMessagesForChannel(w http.ResponseWriter, r *http.Request) {
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
-func handlerGetUsersForChannel(w http.ResponseWriter, r *http.Request) {
+func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []string
 	for idx, user := range getActiveUsers() {
 		users = append(
@@ -124,17 +124,20 @@ func handlerGetUsersForChannel(w http.ResponseWriter, r *http.Request) {
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
 	<head><title>smirc: users</title><meta http-equiv="refresh" content="5"></head>
-    <body><strong>Users:</strong> ` + strings.Join(users, "<br/>") + `</body></html>`
+    <body><strong>Users:</strong><br/> ` + strings.Join(users, "<br/>") + `</body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
 	<head><title>smirc is awesome</title></head><body>
-      <iframe marginwidth="0" marginheight="0" width="500" height="500" scrolling="no" frameborder=0 src="` + endPointGetMessagesForChannel + `">
+      <table><tr><td>
+      <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + endPointGetMessages + `">
       </iframe>
-      <iframe marginwidth="0" marginheight="0" width="500" height="25" scrolling="no" frameborder=0 src="` + endPointGetUsersForChannel + `">
+      </td><td>
+      <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + endPointGetUsers + `">
       </iframe>
+      </td></tr></table>
       <form action="` + endPointSendMessage + `">
         <input type="text" id="` + formKeyMessage + `" name="` + formKeyMessage + `" />
         <input type="submit" value="Send" />
@@ -150,11 +153,11 @@ func sendMessage(message string) {
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
-		log.Fatalf("Failed to post message: %v", err)
+		log.Printf("Failed to post message: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		log.Fatalf("Failed to post message, status code: %d", resp.StatusCode)
+		log.Printf("Failed to post message, status code: %d", resp.StatusCode)
 	}
 }
 
@@ -166,55 +169,51 @@ func getMessages() []Message {
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to get messages: %v", err)
+		log.Printf("Failed to get messages: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Failed to get messages, status code: %d", resp.StatusCode)
+		log.Printf("Failed to get messages, status code: %d", resp.StatusCode)
 	}
 	var messages []Message
 	err = json.NewDecoder(resp.Body).Decode(&messages)
 	if err != nil {
-		log.Fatalf("Failed to decode messages: %v", err)
+		log.Printf("Failed to decode messages: %v", err)
 	}
 	return messages
 }
 
 func sendPing() {
-	log.Print("Sending a PING message")
 	httpClient := &http.Client{}
-
-	// ping
-	ping := Ping{Username: "Alice"}
+	ping := Ping{Username: envVarUserName}
 	jsonBytes, _ := json.Marshal(ping)
 	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
-		log.Fatalf("Failed to send a ping: %v", err)
+		log.Printf("Failed to send a ping: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		log.Fatalf("Failed to send ping, status code: %d", resp.StatusCode)
+		log.Printf("Failed to send ping, status code: %d", resp.StatusCode)
 	}
+	log.Printf("Sent a PING: %s", ping)
 }
 
 func getActiveUsers() []*User {
 	httpClient := &http.Client{}
-
-	// get active users
 	url := fmt.Sprintf("http://%s:%d/users", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to get active users: %v", err)
+		log.Printf("Failed to get active users: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Failed to get active users, status code: %d", resp.StatusCode)
+		log.Printf("Failed to get active users, status code: %d", resp.StatusCode)
 	}
 	var users []*User
 	err = json.NewDecoder(resp.Body).Decode(&users)
 	if err != nil {
-		log.Fatalf("Failed to decode active users: %v", err)
+		log.Printf("Failed to decode active users: %v", err)
 	}
 	return users
 }
@@ -229,8 +228,8 @@ func main() {
 	cfg = readConfig(envVarConfigFileName)
 
 	http.HandleFunc("/", handlerIndex)
-	http.HandleFunc(endPointGetMessagesForChannel, handlerGetMessagesForChannel)
-	http.HandleFunc(endPointGetUsersForChannel, handlerGetUsersForChannel)
+	http.HandleFunc(endPointGetMessages, handlerGetMessages)
+	http.HandleFunc(endPointGetUsers, handlerGetUsers)
 	http.HandleFunc(endPointSendMessage, handlerSendMessage)
 
 	go func() {
@@ -240,5 +239,7 @@ func main() {
 		}
 	}()
 
+	log.Printf("Starting chat client for user %s; Listening on port %d; connecting to server %s on port %d",
+		envVarUserName, cfg.WebServerPortNumber, cfg.ChatServerFQDN, cfg.ChatServerPort)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.WebServerPortNumber), nil))
 }
