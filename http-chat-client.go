@@ -75,8 +75,8 @@ func readConfig(fileName string) *ChatConfig {
 		return nil
 	}
 
-	if config.Port == 0 {
-		config.Port = defaultHTTPChatPort
+	if config.ChatServerPort == 0 {
+		config.ChatServerPort = defaultHTTPChatPort
 	}
 	if config.ChatServerFQDN == "" {
 		config.ChatServerFQDN = defaultHTTPChatServer
@@ -147,7 +147,7 @@ func sendMessage(message string) {
 	httpClient := &http.Client{}
 
 	jsonBytes, _ := json.Marshal(Message{Username: envVarUserName, Message: message})
-	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Fatalf("Failed to post message: %v", err)
@@ -163,7 +163,7 @@ func getMessages() []Message {
 	httpClient := &http.Client{}
 
 	// get messages
-	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Fatalf("Failed to get messages: %v", err)
@@ -187,7 +187,7 @@ func sendPing() {
 	// ping
 	ping := Ping{Username: "Alice"}
 	jsonBytes, _ := json.Marshal(ping)
-	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Fatalf("Failed to send a ping: %v", err)
@@ -202,7 +202,7 @@ func getActiveUsers() []*User {
 	httpClient := &http.Client{}
 
 	// get active users
-	url := fmt.Sprintf("http://%s:%d/users", cfg.ChatServerFQDN, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/users", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Fatalf("Failed to get active users: %v", err)
