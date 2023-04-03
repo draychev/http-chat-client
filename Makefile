@@ -6,4 +6,4 @@ build:
 
 .PHONY: run
 run: build
-	./bin/http-chat-client
+	HTTPCHAT_USERNAME=user1 CONFIG_FILENAME=client.cfg ./bin/http-chat-client

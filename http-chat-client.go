@@ -13,28 +13,29 @@ import (
 
 var cfg *ChatConfig
 
-// --- Web Server Endpoints
+// --- Web ChatServerFQDN Endpoints
 const (
 	endPointSendMessage           = "/send-message"
 	endPointGetMessagesForChannel = "/get-messages"
 	endPointGetUsersForChannel    = "/get-users"
-)
 
-// --- HTML Components
-const (
+	// --- HTML Components
 	formKeyMessage = "message"
-)
 
-// --- Default Config Values
-const (
+	// --- Default Config Values
+
 	defaultHTTPChatServer      = "chat.server.net"
 	defaultHTTPChatPort        = 8080
 	defaultWebServerPortNumber = 99
+
+	// --- Environment Variable Keys
+	envVarUserNameKey       = "HTTPCHAT_USERNAME"
+	envVarConfigFileNameKey = "CONFIG_FILENAME"
 )
 
 var (
-	envVarUserName       = os.Getenv("HTTPCHAT_USERNAME")
-	envVarConfigFileName = os.Getenv("CONFIG_FILENAME")
+	envVarUserName       = os.Getenv(envVarUserNameKey)
+	envVarConfigFileName = os.Getenv(envVarConfigFileNameKey)
 )
 
 type Message struct {
@@ -55,8 +56,8 @@ type Ping struct {
 
 // ChatConfig keeps the config needed to connect to the HTTPChat network
 type ChatConfig struct {
-	Server              string `json:"server"`
-	Port                int    `json:"port"`
+	ChatServerFQDN      string `json:"chat-server-fqdn"`
+	ChatServerPort      int    `json:"chat-server-port"`
 	WebServerPortNumber int    `json:"web-server-port-number"`
 }
 
@@ -77,8 +78,8 @@ func readConfig(fileName string) *ChatConfig {
 	if config.Port == 0 {
 		config.Port = defaultHTTPChatPort
 	}
-	if config.Server == "" {
-		config.Server = defaultHTTPChatServer
+	if config.ChatServerFQDN == "" {
+		config.ChatServerFQDN = defaultHTTPChatServer
 	}
 	if config.WebServerPortNumber == 0 {
 		config.WebServerPortNumber = defaultWebServerPortNumber
@@ -95,7 +96,7 @@ func handlerSendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	message := r.Form.Get(formKeyMessage)
-
+	sendMessage(message)
 	http.Redirect(w, r, "/", 302)
 }
 
@@ -141,13 +142,12 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
-func sendMessage() {
+func sendMessage(message string) {
+	log.Printf("Sending message: %s", message)
 	httpClient := &http.Client{}
 
-	// post a message
-	message := Message{Username: envVarUserName, Message: "Hello, world!"}
-	jsonBytes, _ := json.Marshal(message)
-	url := fmt.Sprintf("http://%s:%d/messages", cfg.Server, cfg.Port)
+	jsonBytes, _ := json.Marshal(Message{Username: envVarUserName, Message: message})
+	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.Port)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Fatalf("Failed to post message: %v", err)
@@ -159,10 +159,11 @@ func sendMessage() {
 }
 
 func getMessages() []Message {
+	log.Print("Getting the list of messages...")
 	httpClient := &http.Client{}
 
 	// get messages
-	url := fmt.Sprintf("http://%s:%d/messages", cfg.Server, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.Port)
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Fatalf("Failed to get messages: %v", err)
@@ -180,12 +181,13 @@ func getMessages() []Message {
 }
 
 func sendPing() {
+	log.Print("Sending a PING message")
 	httpClient := &http.Client{}
 
 	// ping
 	ping := Ping{Username: "Alice"}
 	jsonBytes, _ := json.Marshal(ping)
-	url := fmt.Sprintf("http://%s:%d/ping", cfg.Server, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.Port)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Fatalf("Failed to send a ping: %v", err)
@@ -200,7 +202,7 @@ func getActiveUsers() []*User {
 	httpClient := &http.Client{}
 
 	// get active users
-	url := fmt.Sprintf("http://%s:%d/users", cfg.Server, cfg.Port)
+	url := fmt.Sprintf("http://%s:%d/users", cfg.ChatServerFQDN, cfg.Port)
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Fatalf("Failed to get active users: %v", err)
@@ -218,6 +220,12 @@ func getActiveUsers() []*User {
 }
 
 func main() {
+	for _, key := range []string{envVarUserNameKey, envVarConfigFileNameKey} {
+		if os.Getenv(key) == "" {
+			log.Fatalf("Environment variable %s is required", key)
+		}
+	}
+
 	cfg = readConfig(envVarConfigFileName)
 
 	http.HandleFunc("/", handlerIndex)
