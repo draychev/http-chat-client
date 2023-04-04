@@ -257,8 +257,7 @@ func main() {
 			select {
 			case <-done:
 				return
-			case t := <-ticker.C:
-				log.Info().Msgf("Tick at %+v", t)
+			case _ = <-ticker.C:
 				log.Info().Msgf("Send PING %+v...", time.Now())
 				sendPing()
 			}
