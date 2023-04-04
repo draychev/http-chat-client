@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/openservicemesh/osm/pkg/logger"
 )
+
+var log = logger.New("http-chat-client")
 
 var cfg *ChatConfig
 
@@ -66,7 +69,7 @@ func readConfig(fileName string) *ChatConfig {
 	// Load the JSON file
 	data, err := os.ReadFile(fileName)
 	if err != nil {
-		log.Fatalf("Failed to read config file [%s]: %s", fileName, err)
+		log.Fatal().Msgf("Failed to read config file [%s]: %s", fileName, err)
 	}
 
 	// Parse the JSON into a Config struct
@@ -91,7 +94,7 @@ func readConfig(fileName string) *ChatConfig {
 
 func handlerSendMessage(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		log.Printf("Error: %s", err)
+		log.Info().Msgf("Error: %s", err)
 		http.Redirect(w, r, "/", 302)
 		return
 	}
@@ -146,18 +149,18 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func sendMessage(message string) {
-	log.Printf("Sending message: %s", message)
+	log.Info().Msgf("Sending message: %s", message)
 	httpClient := &http.Client{}
 
 	jsonBytes, _ := json.Marshal(Message{Username: envVarUserName, Message: message})
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
-		log.Printf("Failed to post message: %v", err)
+		log.Info().Msgf("Failed to post message: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		log.Printf("Failed to post message, status code: %d", resp.StatusCode)
+		log.Info().Msgf("Failed to post message, status code: %d", resp.StatusCode)
 	}
 }
 
@@ -169,16 +172,16 @@ func getMessages() []Message {
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		log.Printf("Failed to get messages: %v", err)
+		log.Info().Msgf("Failed to get messages: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Failed to get messages, status code: %d", resp.StatusCode)
+		log.Info().Msgf("Failed to get messages, status code: %d", resp.StatusCode)
 	}
 	var messages []Message
 	err = json.NewDecoder(resp.Body).Decode(&messages)
 	if err != nil {
-		log.Printf("Failed to decode messages: %v", err)
+		log.Info().Msgf("Failed to decode messages: %v", err)
 	}
 	return messages
 }
@@ -190,13 +193,13 @@ func sendPing() {
 	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
-		log.Printf("Failed to send a ping: %v", err)
+		log.Info().Msgf("Failed to send a ping: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		log.Printf("Failed to send ping, status code: %d", resp.StatusCode)
+		log.Info().Msgf("Failed to send ping, status code: %d", resp.StatusCode)
 	}
-	log.Printf("Sent a PING: %s", ping)
+	log.Info().Msgf("Sent a PING: %s", ping)
 }
 
 func getActiveUsers() []*User {
@@ -204,16 +207,16 @@ func getActiveUsers() []*User {
 	url := fmt.Sprintf("http://%s:%d/users", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		log.Printf("Failed to get active users: %v", err)
+		log.Info().Msgf("Failed to get active users: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Failed to get active users, status code: %d", resp.StatusCode)
+		log.Info().Msgf("Failed to get active users, status code: %d", resp.StatusCode)
 	}
 	var users []*User
 	err = json.NewDecoder(resp.Body).Decode(&users)
 	if err != nil {
-		log.Printf("Failed to decode active users: %v", err)
+		log.Info().Msgf("Failed to decode active users: %v", err)
 	}
 	return users
 }
@@ -221,7 +224,7 @@ func getActiveUsers() []*User {
 func main() {
 	for _, key := range []string{envVarUserNameKey, envVarConfigFileNameKey} {
 		if os.Getenv(key) == "" {
-			log.Fatalf("Environment variable %s is required", key)
+			log.Fatal().Msgf("Environment variable %s is required", key)
 		}
 	}
 
@@ -239,7 +242,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("Starting chat client for user %s; Listening on port %d; connecting to server %s on port %d",
+	log.Info().Msgf("Starting chat client for user %s; Listening on port %d; connecting to server %s on port %d",
 		envVarUserName, cfg.WebServerPortNumber, cfg.ChatServerFQDN, cfg.ChatServerPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.WebServerPortNumber), nil))
+	log.Fatal().Err(http.ListenAndServe(fmt.Sprintf(":%d", cfg.WebServerPortNumber), nil)).Msg("Error starting server")
 }
