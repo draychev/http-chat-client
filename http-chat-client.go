@@ -66,15 +66,16 @@ type ChatConfig struct {
 
 
 func readConfig(fileName string) *ChatConfig {
-	config := ChatConfig{
-		ChatServerFQDN: defaultHTTPChatServer,
-		ChatServerPort:      defaultHTTPChatPort,
-		WebServerPortNumber: defaultWebServerPortNumber,
-	}
+	var config ChatConfig
 	// Load the JSON file
 	data, err := os.ReadFile(fileName)
 	if err != nil {
-		log.Fatal().Msgf("Failed to read config file [%s]: %s", fileName, err)
+		log.Error().Err(err).Msgf("Failed to read config file [%s]: %s", fileName, err)
+		return &ChatConfig{
+			ChatServerFQDN: defaultHTTPChatServer,
+			ChatServerPort:      defaultHTTPChatPort,
+			WebServerPortNumber: defaultWebServerPortNumber,
+		}
 	}
 
 	// Parse the JSON into a Config struct
