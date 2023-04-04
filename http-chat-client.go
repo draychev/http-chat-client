@@ -64,8 +64,13 @@ type ChatConfig struct {
 	WebServerPortNumber int    `json:"web-server-port-number"`
 }
 
+
 func readConfig(fileName string) *ChatConfig {
-	var config ChatConfig
+	config := ChatConfig{
+		ChatServerFQDN: defaultHTTPChatServer,
+		ChatServerPort:      defaultHTTPChatPort,
+		WebServerPortNumber: defaultWebServerPortNumber,
+	}
 	// Load the JSON file
 	data, err := os.ReadFile(fileName)
 	if err != nil {
@@ -235,10 +240,24 @@ func main() {
 	http.HandleFunc(endPointGetUsers, handlerGetUsers)
 	http.HandleFunc(endPointSendMessage, handlerSendMessage)
 
+	ticker := time.NewTicker(3000 * time.Millisecond)
+	done := make(chan bool)
+
+	defer func() {
+		ticker.Stop()
+		done <- true
+	}()
+
 	go func() {
 		for {
-			sendPing()
-			time.Sleep(3 * time.Second)
+			select {
+			case <-done:
+				return
+			case t := <-ticker.C:
+				log.Info().Msgf("Tick at %+v", t)
+				log.Info().Msgf("Send PING %+v...", time.Now())
+				sendPing()
+			}
 		}
 	}()
 
