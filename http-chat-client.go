@@ -179,6 +179,7 @@ func getMessages() []Message {
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get messages")
+		return messages
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -201,10 +202,12 @@ func sendPing() {
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Error().Err(err).Msgf("Failed to send a ping to : %s", url)
+		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
 		log.Error().Msgf("Failed to send ping, status code: %d", resp.StatusCode)
+		return
 	}
 	log.Info().Msgf("Sent a PING: %s", ping)
 }
@@ -216,6 +219,7 @@ func getActiveUsers() []*User {
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get active users")
+		return users
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
