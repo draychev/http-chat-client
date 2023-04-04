@@ -10,5 +10,5 @@ This is an extremely simple HTTP Chat Client.
 Run it with: `go run ./http-chat-client.go`
 
 
-- Server: github.com/draychev/http-chat-server
-- Client: github.com/draychev/http-chat-client
+- Server: [github.com/draychev/http-chat-server](https://github.com/draychev/http-chat-server)
+- Client: [github.com/draychev/http-chat-client](https://github.com/draychev/http-chat-client)
