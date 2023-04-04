@@ -162,32 +162,33 @@ func sendMessage(message string) {
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
-		log.Info().Msgf("Failed to post message: %v", err)
+		log.Error().Err(err).Msgf("Failed to post message: %s", jsonBytes)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		log.Info().Msgf("Failed to post message, status code: %d", resp.StatusCode)
+		log.Error().Msgf("Failed to post message, status code: %d", resp.StatusCode)
 	}
 }
 
 func getMessages() []Message {
 	log.Print("Getting the list of messages...")
 	httpClient := &http.Client{}
-
+	var messages []Message
 	// get messages
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		log.Info().Msgf("Failed to get messages: %v", err)
+		log.Error().Err(err).Msg("Failed to get messages")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Info().Msgf("Failed to get messages, status code: %d", resp.StatusCode)
+		log.Error().Msgf("Failed to get messages, status code: %d", resp.StatusCode)
+		return messages
 	}
-	var messages []Message
 	err = json.NewDecoder(resp.Body).Decode(&messages)
 	if err != nil {
-		log.Info().Msgf("Failed to decode messages: %v", err)
+		log.Error().Err(err).Msgf("Failed to decode messages: %+v", messages)
+		return messages
 	}
 	return messages
 }
@@ -199,30 +200,32 @@ func sendPing() {
 	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
-		log.Info().Msgf("Failed to send a ping: %v", err)
+		log.Error().Err(err).Msgf("Failed to send a ping to : %s", url)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		log.Info().Msgf("Failed to send ping, status code: %d", resp.StatusCode)
+		log.Error().Msgf("Failed to send ping, status code: %d", resp.StatusCode)
 	}
 	log.Info().Msgf("Sent a PING: %s", ping)
 }
 
 func getActiveUsers() []*User {
 	httpClient := &http.Client{}
+	var users []*User
 	url := fmt.Sprintf("http://%s:%d/users", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Get(url)
 	if err != nil {
-		log.Info().Msgf("Failed to get active users: %v", err)
+		log.Error().Err(err).Msg("Failed to get active users")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Info().Msgf("Failed to get active users, status code: %d", resp.StatusCode)
+		log.Error().Msgf("Failed to get active users, status code: %d", resp.StatusCode)
+		return users
 	}
-	var users []*User
 	err = json.NewDecoder(resp.Body).Decode(&users)
 	if err != nil {
-		log.Info().Msgf("Failed to decode active users: %v", err)
+		log.Error().Err(err).Msgf("Failed to decode active users: %v", err)
+		return users
 	}
 	return users
 }
