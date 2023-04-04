@@ -118,7 +118,7 @@ func handlerGetMessages(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>smirc: messages</title><meta http-equiv="refresh" content="1"></head>
+	<head><title>http-chat-client: messages</title><meta http-equiv="refresh" content="1"></head>
     <body>` + strings.Join(messages, "<br/>") + `</body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
@@ -132,14 +132,14 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>smirc: users</title><meta http-equiv="refresh" content="5"></head>
+	<head><title>http-chat-client: users</title><meta http-equiv="refresh" content="5"></head>
     <body><strong>Users:</strong><br/> ` + strings.Join(users, "<br/>") + `</body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>smirc is awesome</title></head><body>
+	<head><title>http-chat-client is awesome</title></head><body>
       <table><tr><td>
       <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + endPointGetMessages + `">
       </iframe>
