@@ -118,7 +118,7 @@ func handlerGetMessages(w http.ResponseWriter, r *http.Request) {
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
 	<head><title>http-chat-client: messages</title><meta http-equiv="refresh" content="1">` + getCSS() + `</head>
-    <body>` + strings.Join(messages, "<br/>") + `</body></html>`
+    <body><div><strong>Chat Messages:</strong><br/>` + strings.Join(messages, "<br/>") + `</div></body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
@@ -132,7 +132,7 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
 	<head><title>http-chat-client: users</title><meta http-equiv="refresh" content="5">` + getCSS() + `</head>
-    <body><strong>Users:</strong><br/> ` + strings.Join(users, "<br/>") + `</body></html>`
+    <body><div><strong>Users:</strong><br/> ` + strings.Join(users, "<br/>") + `</div></body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
@@ -155,12 +155,12 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-div, td {
+div, td, input, submit {
   font-family: "GlassTTYVT220", monospace;
   background-color: transparent;
   color: #ffb300;
   display: inline-block;
-  padding: 0;
+  padding: 3px;
   vertical-align: middle;
   text-shadow: 0 0 20px #936713a3, 0 0 5px #e3bb1eed, 0 0 2px #e4d647;
 }
