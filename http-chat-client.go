@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"embed"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,7 +13,7 @@ import (
 	"github.com/openservicemesh/osm/pkg/logger"
 )
 
-//go:embed hello.txt
+//go:embed style.css
 var css string
 
 var log = logger.New("http-chat-client")
@@ -141,7 +141,7 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCSS() string {
-	return fmt.Sprintf(`<style type="text/css">%s</style>`).
+	return fmt.Sprintf(`<style type="text/css">%s</style>`, css)
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
