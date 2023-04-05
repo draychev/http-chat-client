@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/openservicemesh/osm/pkg/logger"
 )
+
+//go:embed hello.txt
+var css string
 
 var log = logger.New("http-chat-client")
 
@@ -137,39 +141,7 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCSS() string {
-	return `<style type="text/css">
-@font-face {
-  font-family: "GlassTTYVT220";
-  src: url("https://raw.githubusercontent.com/svofski/glasstty/master/Glass_TTY_VT220.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-body {
-  background-color: #222;
-  cursor: text;
-  overflow: hidden; 
-  font-family: "GlassTTYVT220", monospace;
-  font-size: 18px;
-  font-weight: normal;
-  padding: 0px;
-  margin-left: auto;
-  margin-right: auto;
-}
-div, td, input, submit {
-  font-family: "GlassTTYVT220", monospace;
-  background-color: transparent;
-  color: #ffb300;
-  display: inline-block;
-  padding: 3px;
-  vertical-align: middle;
-  text-shadow: 0 0 20px #936713a3, 0 0 5px #e3bb1eed, 0 0 2px #e4d647;
-}
-input {
-  background-color: #ffb300;
-  color: black;
-  box-shadow: 0 0 20px #936713a3, 0 0 5px #e3bb1eed, 0 0 2px #e4d647;
-}
-</style>`
+	return fmt.Sprintf(`<style type="text/css">%s</style>`).
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
