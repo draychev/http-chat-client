@@ -14,7 +14,7 @@ import (
 )
 
 //go:embed style.css
-var css string
+var staticCSS string
 
 var log = logger.New("http-chat-client")
 
@@ -141,7 +141,7 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCSS() string {
-	return fmt.Sprintf(`<style type="text/css">%s</style>`, css)
+	return fmt.Sprintf(`<style type="text/css">%s</style>`, staticCSS)
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
