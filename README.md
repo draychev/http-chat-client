@@ -12,3 +12,5 @@ Run it with: `go run ./http-chat-client.go`
 
 - Server: [github.com/draychev/http-chat-server](https://github.com/draychev/http-chat-server)
 - Client: [github.com/draychev/http-chat-client](https://github.com/draychev/http-chat-client)
+
+The CSS theme used here is inspired by https://jcs.org/ 
