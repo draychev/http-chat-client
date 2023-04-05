@@ -3,7 +3,7 @@
 This is an extremely simple HTTP Chat Client.
 
 ## Principles:
-  - everything in one file
+  - everything in one file (ok, maybe two)
   - no Javascript
   - no unnecessary features
 
