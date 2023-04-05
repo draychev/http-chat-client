@@ -137,9 +137,48 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
+func getCSS() string {
+	return `<style type="text/css">
+@font-face {
+  font-family: "GlassTTYVT220";
+  src: url("https://raw.githubusercontent.com/svofski/glasstty/master/Glass_TTY_VT220.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+body {
+  background-color: #222;
+  cursor: text;
+  overflow: hidden; 
+  font-family: "GlassTTYVT220", monospace;
+  font-size: 18px;
+  font-weight: normal;
+  padding: 0px;
+  width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+td {
+  font-family: "GlassTTYVT220", monospace;
+  background-color: transparent;
+  color: #ffb300;
+  display: inline-block;
+  height: 18px;
+  padding: 0;
+  vertical-align: middle;
+  width: 9px;
+  text-shadow: 0 0 20px #936713a3, 0 0 5px #e3bb1eed, 0 0 2px #e4d647;
+}
+input {
+  background-color: #ffb300;
+  color: black;
+  box-shadow: 0 0 20px #936713a3, 0 0 5px #e3bb1eed, 0 0 2px #e4d647;
+}
+</style>`
+}
+
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>http-chat-client is awesome</title></head><body>
+	<head><title>http-chat-client is awesome</title><style></style></head>` + getCSS() + `<body>
       <table><tr><td>
       <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + endPointGetMessages + `">
       </iframe>
