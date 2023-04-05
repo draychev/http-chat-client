@@ -18,9 +18,9 @@ var cfg *ChatConfig
 
 // --- Web ChatServerFQDN Endpoints
 const (
-	endPointSendMessage = "/send-message"
-	endPointGetMessages = "/get-messages"
-	endPointGetUsers    = "/get-users"
+	EndPointSendMessage = "/send-message"
+	EndPointGetMessages = "/get-messages"
+	EndPointGetUsers    = "/get-users"
 
 	// --- HTML Components
 	formKeyMessage = "message"
@@ -32,13 +32,13 @@ const (
 	defaultWebServerPortNumber = 99
 
 	// --- Environment Variable Keys
-	envVarUserNameKey       = "HTTPCHAT_USERNAME"
-	envVarConfigFileNameKey = "CONFIG_FILENAME"
+	EnvVarUserNameKey       = "HTTPCHAT_USERNAME"
+	EnvVarConfigFileNameKey = "CONFIG_FILENAME"
 )
 
 var (
-	envVarUserName       = os.Getenv(envVarUserNameKey)
-	envVarConfigFileName = os.Getenv(envVarConfigFileNameKey)
+	EnvVarUserName       = getEnvOrDefault(EnvVarUserNameKey, "change-your-username")
+	EnvVarConfigFileName = getEnvOrDefault(EnvVarConfigFileNameKey, "client.cfg")
 )
 
 type Message struct {
@@ -64,7 +64,6 @@ type ChatConfig struct {
 	WebServerPortNumber int    `json:"web-server-port-number"`
 }
 
-
 func readConfig(fileName string) *ChatConfig {
 	var config ChatConfig
 	// Load the JSON file
@@ -72,7 +71,7 @@ func readConfig(fileName string) *ChatConfig {
 	if err != nil {
 		log.Error().Err(err).Msgf("Failed to read config file [%s]: %s", fileName, err)
 		return &ChatConfig{
-			ChatServerFQDN: defaultHTTPChatServer,
+			ChatServerFQDN:      defaultHTTPChatServer,
 			ChatServerPort:      defaultHTTPChatPort,
 			WebServerPortNumber: defaultWebServerPortNumber,
 		}
@@ -180,13 +179,13 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
 	<head><title>http-chat-client is awesome</title><style></style></head>` + getCSS() + `<body>
       <table><tr><td>
-      <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + endPointGetMessages + `">
+      <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + EndPointGetMessages + `">
       </iframe>
       </td><td>
-      <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + endPointGetUsers + `">
+      <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + EndPointGetUsers + `">
       </iframe>
       </td></tr></table>
-      <form action="` + endPointSendMessage + `">
+      <form action="` + EndPointSendMessage + `">
         <input type="text" id="` + formKeyMessage + `" name="` + formKeyMessage + `" />
         <input type="submit" value="Send" />
       </form></body></html>`
@@ -196,7 +195,7 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 func sendMessage(message string) {
 	log.Info().Msgf("Sending message: %s", message)
 	httpClient := &http.Client{}
-	jsonBytes, _ := json.Marshal(Message{Username: envVarUserName, Message: message})
+	jsonBytes, _ := json.Marshal(Message{Username: EnvVarUserName, Message: message})
 	url := fmt.Sprintf("http://%s:%d/messages", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
@@ -236,7 +235,7 @@ func getMessages() []Message {
 
 func sendPing() {
 	httpClient := &http.Client{}
-	ping := Ping{Username: envVarUserName}
+	ping := Ping{Username: EnvVarUserName}
 	jsonBytes, _ := json.Marshal(ping)
 	url := fmt.Sprintf("http://%s:%d/ping", cfg.ChatServerFQDN, cfg.ChatServerPort)
 	resp, err := httpClient.Post(url, "application/json", bytes.NewReader(jsonBytes))
@@ -275,18 +274,18 @@ func getActiveUsers() []*User {
 }
 
 func main() {
-	for _, key := range []string{envVarUserNameKey, envVarConfigFileNameKey} {
+	for _, key := range []string{EnvVarUserNameKey, EnvVarConfigFileNameKey} {
 		if os.Getenv(key) == "" {
 			log.Fatal().Msgf("Environment variable %s is required", key)
 		}
 	}
 
-	cfg = readConfig(envVarConfigFileName)
+	cfg = readConfig(EnvVarConfigFileName)
 
 	http.HandleFunc("/", handlerIndex)
-	http.HandleFunc(endPointGetMessages, handlerGetMessages)
-	http.HandleFunc(endPointGetUsers, handlerGetUsers)
-	http.HandleFunc(endPointSendMessage, handlerSendMessage)
+	http.HandleFunc(EndPointGetMessages, handlerGetMessages)
+	http.HandleFunc(EndPointGetUsers, handlerGetUsers)
+	http.HandleFunc(EndPointSendMessage, handlerSendMessage)
 
 	ticker := time.NewTicker(3000 * time.Millisecond)
 	done := make(chan bool)
@@ -309,6 +308,13 @@ func main() {
 	}()
 
 	log.Info().Msgf("Starting chat client for user %s; Listening on port %d; connecting to server %s on port %d",
-		envVarUserName, cfg.WebServerPortNumber, cfg.ChatServerFQDN, cfg.ChatServerPort)
+		EnvVarUserName, cfg.WebServerPortNumber, cfg.ChatServerFQDN, cfg.ChatServerPort)
 	log.Fatal().Err(http.ListenAndServe(fmt.Sprintf(":%d", cfg.WebServerPortNumber), nil)).Msg("Error starting server")
+}
+
+func getEnvOrDefault(key, defaultValue string) string {
+	if EnvVarValue := os.Getenv(key); EnvVarValue != "" {
+		return EnvVarValue
+	}
+	return defaultValue
 }
