@@ -117,7 +117,7 @@ func handlerGetMessages(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>http-chat-client: messages</title><meta http-equiv="refresh" content="1"></head>
+	<head><title>http-chat-client: messages</title><meta http-equiv="refresh" content="1">` + getCSS() + `</head>
     <body>` + strings.Join(messages, "<br/>") + `</body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
@@ -131,7 +131,7 @@ func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>http-chat-client: users</title><meta http-equiv="refresh" content="5"></head>
+	<head><title>http-chat-client: users</title><meta http-equiv="refresh" content="5">` + getCSS() + `</head>
     <body><strong>Users:</strong><br/> ` + strings.Join(users, "<br/>") + `</body></html>`
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
@@ -152,19 +152,16 @@ body {
   font-size: 18px;
   font-weight: normal;
   padding: 0px;
-  width: 720px;
   margin-left: auto;
   margin-right: auto;
 }
-td {
+div, td {
   font-family: "GlassTTYVT220", monospace;
   background-color: transparent;
   color: #ffb300;
   display: inline-block;
-  height: 18px;
   padding: 0;
   vertical-align: middle;
-  width: 9px;
   text-shadow: 0 0 20px #936713a3, 0 0 5px #e3bb1eed, 0 0 2px #e4d647;
 }
 input {
@@ -177,7 +174,7 @@ input {
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
-	<head><title>http-chat-client is awesome</title><style></style></head>` + getCSS() + `<body>
+	<head><title>http-chat-client is awesome</title><style></style>` + getCSS() + `</head><body>
       <table><tr><td>
       <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + EndPointGetMessages + `">
       </iframe>
