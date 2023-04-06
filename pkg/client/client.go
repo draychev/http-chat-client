@@ -101,7 +101,7 @@ func readConfig(fileName string) *ChatConfig {
 	return &config
 }
 
-func handlerSendMessage(w http.ResponseWriter, r *http.Request) {
+func HandlerSendMessage(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Error().Err(err).Msg("Error parsing the web form from request")
 		http.Redirect(w, r, "/", 302)
@@ -112,7 +112,7 @@ func handlerSendMessage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
-func handlerGetMessages(w http.ResponseWriter, r *http.Request) {
+func HandlerGetMessages(w http.ResponseWriter, r *http.Request) {
 	var messages []string
 	for idx, msg := range getMessages() {
 		messages = append(
@@ -126,7 +126,7 @@ func handlerGetMessages(w http.ResponseWriter, r *http.Request) {
 	_, _ = fmt.Fprintf(w, "%s", content)
 }
 
-func handlerGetUsers(w http.ResponseWriter, r *http.Request) {
+func HandlerGetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []string
 	for idx, user := range getActiveUsers() {
 		users = append(
@@ -144,7 +144,7 @@ func getCSS() string {
 	return fmt.Sprintf(`<style type="text/css">%s</style>`, staticCSS)
 }
 
-func handlerIndex(w http.ResponseWriter, r *http.Request) {
+func HandlerIndex(w http.ResponseWriter, r *http.Request) {
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
 	<head><title>http-chat-client is awesome</title><style></style>` + getCSS() + `</head><body>
       <table><tr><td>
@@ -251,10 +251,10 @@ func NewChatClient(quit chan interface{}, ready chan interface{}) {
 
 	Config = readConfig(EnvVarConfigFileName)
 
-	http.HandleFunc("/", handlerIndex)
-	http.HandleFunc(EndPointGetMessages, handlerGetMessages)
-	http.HandleFunc(EndPointGetUsers, handlerGetUsers)
-	http.HandleFunc(EndPointSendMessage, handlerSendMessage)
+	http.HandleFunc("/", HandlerIndex)
+	http.HandleFunc(EndPointGetMessages, HandlerGetMessages)
+	http.HandleFunc(EndPointGetUsers, HandlerGetUsers)
+	http.HandleFunc(EndPointSendMessage, HandlerSendMessage)
 
 	ticker := time.NewTicker(3000 * time.Millisecond)
 	done := make(chan bool)
