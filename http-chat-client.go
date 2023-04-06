@@ -202,7 +202,7 @@ func getMessages() []Message {
 	return messages
 }
 
-func sendPing() {
+func SendPing() {
 	httpClient := &http.Client{}
 	ping := Ping{Username: EnvVarUserName}
 	jsonBytes, _ := json.Marshal(ping)
@@ -271,7 +271,7 @@ func main() {
 				return
 			case _ = <-ticker.C:
 				log.Info().Msgf("Send PING %+v...", time.Now())
-				sendPing()
+				SendPing()
 			}
 		}
 	}()
