@@ -270,7 +270,7 @@ func NewChatClient(quit chan interface{}, ready chan interface{}) {
 			case <-done:
 				return
 			case _ = <-ticker.C:
-				log.Info().Msgf("Send PING %+v...", time.Now())
+				log.Info().Msgf("Trying to send a PING %+v...", time.Now())
 				sendPing()
 			}
 		}
