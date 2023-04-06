@@ -202,7 +202,7 @@ func getMessages() []Message {
 	return messages
 }
 
-func SendPing() {
+func sendPing() {
 	httpClient := &http.Client{}
 	ping := Ping{Username: EnvVarUserName}
 	jsonBytes, _ := json.Marshal(ping)
@@ -242,7 +242,7 @@ func getActiveUsers() []*User {
 	return users
 }
 
-func main() {
+func NewChatClient(quit chan interface{}, ready chan interface{}) {
 	for _, key := range []string{EnvVarUserNameKey, EnvVarConfigFileNameKey} {
 		if os.Getenv(key) == "" {
 			log.Fatal().Msgf("Environment variable %s is required", key)
@@ -271,14 +271,23 @@ func main() {
 				return
 			case _ = <-ticker.C:
 				log.Info().Msgf("Send PING %+v...", time.Now())
-				SendPing()
+				sendPing()
 			}
 		}
 	}()
+	ready <- true
+	<-quit
+}
 
+func main() {
+	quit := make(chan interface{})
+	ready := make(chan interface{})
+	go NewChatClient(quit, ready)
+	<-ready
 	log.Info().Msgf("Starting chat client for user %s; Listening on port %d; connecting to server %s on port %d",
 		EnvVarUserName, cfg.WebServerPortNumber, cfg.ChatServerFQDN, cfg.ChatServerPort)
 	log.Fatal().Err(http.ListenAndServe(fmt.Sprintf(":%d", cfg.WebServerPortNumber), nil)).Msg("Error starting server")
+	close(quit)
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
