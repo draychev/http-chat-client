@@ -154,7 +154,7 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
       <iframe marginwidth="0" marginheight="0" width="480" height="640" scrolling="yes" frameborder=0 src="` + EndPointGetUsers + `">
       </iframe>
       </td></tr></table>
-      <form action="` + EndPointSendMessage + `">
+      <form method="post" action="` + EndPointSendMessage + `">
         <input type="text" id="` + formKeyMessage + `" name="` + formKeyMessage + `" />
         <input type="submit" value="Send" />
       </form></body></html>`
