@@ -131,7 +131,7 @@ func HandlerGetUsers(w http.ResponseWriter, r *http.Request) {
 	for idx, user := range getActiveUsers() {
 		users = append(
 			users,
-			fmt.Sprintf("(%d)[%s] %s", idx, user.LastPing, user.Username),
+			fmt.Sprintf("(%d) %s", idx, user.Username),
 		)
 	}
 	content := `<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
